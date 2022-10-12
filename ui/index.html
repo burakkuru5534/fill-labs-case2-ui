@@ -56,16 +56,32 @@
     el: 'body',
 
     data: {
+
       users: [],
-      newuser: {}
+      newuser: {},
+      error: false,
+      update: false,
+      updateIndex: null,
+      ids: [],
+      deleteMultiple: false
+
     },
 
     // This is run whenever the page is loaded to make sure we have a current user list
     created: function() {
       // Use the vue-resource $http client to fetch data from the /users route
       this.$http.get('http://localhost:8081/api/users').then(function(response) {
-        console.log(response)
-        this.users = response.data.Data ? response.data.Data : []
+        console.log("response:",response)
+       // this.users = response.data ? response.data : []
+        for (var i = 0; i < response.data.length; i++) {
+          console.log("response.data[i].email:",response.data[i].email)
+          this.newuser = response.data
+          this.users.push(this.newuser)
+          this.newuser = {}
+          //this.users.push(response.data[i]);
+        }
+        console.log("users:",this.users)
+
       })
 
     },
@@ -91,7 +107,7 @@
 
       deleteuser: function(index) {
         // Use the $http client to delete a user by its id
-        this.$http.delete('/users/' + this.users[index].id).success(function(response) {
+        this.$http.delete('http://localhost:8081/api/users?id=' + this.users[index].id).success(function(response) {
           this.users.splice(index, 1)
           console.log("user deleted!")
         }).error(function(error) {

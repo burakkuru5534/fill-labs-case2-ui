@@ -53,6 +53,12 @@ export default {
       deleteMultiple: false
     }
   },
+  mounted() {
+    this.$http.get('http://localhost:8081/api/users').then(function(response) {
+      console.log(response)
+      this.users = response.data.items ? response.data.items : []
+    })
+  },
   // This is run whenever the page is loaded to make sure we have a current User list
   created: function() {
     // Use the vue-resource $http client to fetch data from the /users route
