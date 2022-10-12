@@ -1,0 +1,105 @@
+<!-- public/index.html -->
+
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <title>User management App</title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"  href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  <!-- JQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  <!-- Vue.js -->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.7.0/vue-resource.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <h2>users</h2>
+      <ul class="list-group">
+        <li class="list-group-item" v-for="user in users">
+          {{ user.Email }}
+          <span class="pull-right">
+                                <button class="btn btn-xs btn-danger" v-on:click="deleteuser($index)">
+                                    <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                </button>
+                            </span>
+        </li>
+      </ul>
+      <div class="input-group">
+        <input type="text"
+               class="form-control"
+               placeholder="New user"
+               v-on:keyup.enter="createuser"
+               v-model="newuser.Email">
+        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" v-on:click="createuser">Create</button>
+                        </span>
+      </div><!-- /input-group -->
+    </div>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: 'body',
+
+    data: {
+      users: [],
+      newuser: {}
+    },
+
+    // This is run whenever the page is loaded to make sure we have a current user list
+    created: function() {
+      // Use the vue-resource $http client to fetch data from the /users route
+      this.$http.get('http://localhost:8081/api/users').then(function(response) {
+        console.log(response)
+        this.users = response.data.Data ? response.data.Data : []
+      })
+
+    },
+
+    methods: {
+      createuser: function() {
+        if (!$.trim(this.newuser.Email)) {
+          this.newuser = {}
+          return
+        }
+
+        // Post the new user to the /users route using the $http client
+        this.$http.post('http://localhost:8081/api/users', this.newuser).success(function(response) {
+          this.newuser.id = response.created
+          this.users.push(this.newuser)
+          console.log("user created!")
+          console.log(this.newuser)
+          this.newuser = {}
+        }).error(function(error) {
+          console.log(error)
+        });
+      },
+
+      deleteuser: function(index) {
+        // Use the $http client to delete a user by its id
+        this.$http.delete('/users/' + this.users[index].id).success(function(response) {
+          this.users.splice(index, 1)
+          console.log("user deleted!")
+        }).error(function(error) {
+          console.log(error)
+        })
+      }
+    }
+  })
+</script>
+</body>
+</html>
