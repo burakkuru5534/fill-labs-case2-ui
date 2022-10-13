@@ -6,7 +6,7 @@ In this project we will build a simple UI for the [fill-labs-case2-api]
 
 - [React](https://reactjs.org/)
 - html
-- css
+- js
 - vue
 
 ## what can we do with this UI
