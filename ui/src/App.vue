@@ -2,7 +2,7 @@
   <div id="app" class="container-fluid text-center">
     <h1 class="text-info">{{ title }}</h1>
     <p>{{ msg }}</p>
-
+sandsjkdnjs
     <div class="col">
       <div v-if="error" class="alert alert-danger" @click="error = !error">
         <strong>Error:</strong> Please add the User name first!
@@ -35,6 +35,12 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import BootstrapVue from "bootstrap-vue"
+
+Vue.use(BootstrapVue)
+
+
 export default {
   name: 'app',
   data () {
@@ -94,6 +100,31 @@ export default {
       }).error(function(error) {
         console.log(error)
       })
+    },
+    handleClick: function(){
+      this.$confirm(
+        {
+          message: 'Are you sure?',
+          button: {
+            no: 'No',
+            yes: 'Yes'
+          },
+          /**
+           * Callback Function
+           * @param {Boolean} confirm
+           */
+          callback: confirm => {
+            if (confirm) {
+              this.$http.delete('/users/' + this.users[index].id).success(function(response) {
+                this.users.splice(index, 1)
+                console.log("User deleted!")
+              }).error(function(error) {
+                console.log(error)
+              })
+            }
+          }
+        }
+      )
     }
   }
 }

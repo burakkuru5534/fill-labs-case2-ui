@@ -7,34 +7,41 @@
   <title>User management App</title>
 
   <!-- Latest compiled and minified CSS -->
+
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
   <!-- Font Awesome -->
   <link rel="stylesheet"  href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
-
+  <!-- Vue.js -->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.7.0/vue-resource.min.js"></script>
   <!-- JQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
-  <!-- Vue.js -->
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.7.0/vue-resource.min.js"></script>
+
+  <script src="https://unpkg.com/bootstrap-vue@2.22.0/dist/bootstrap-vue.js"></script>
 </head>
 <body>
 <div class="container">
   <div class="row">
     <div class="col-md-4">
       <h2>users</h2>
-      <ul class="list-group">
+      <ul class="list-group" v-if="users && users.length > 0">
         <li class="list-group-item" v-for="user in users">
-          {{ user.Email }}
+          {{ user.email }}
           <span class="pull-right">
-                                <button class="btn btn-xs btn-danger" v-on:click="deleteuser($index)">
-                                    <i class="fa fa-trash-o" aria-hidden="true"></i>
-                                </button>
-                            </span>
+            <button class="btn btn-xs btn-danger" data-toggle="modal" data-target="#exampleModal" v-on:click="selectedUser = $index">
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+            </button>
+        </span>
+          <span class="pull-right">
+            <button class="btn btn-xs btn-warning" v-on:click="updateuser($index)">
+                <i class="fa fa-cog fa-spin fa-fw" aria-hidden="true"></i>
+            </button>
+        </span>
         </li>
       </ul>
       <div class="input-group">
@@ -47,6 +54,27 @@
                             <button class="btn btn-primary" type="button" v-on:click="createuser">Create</button>
                         </span>
       </div><!-- /input-group -->
+
+      <!-- Modal -->
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Are you sure want to delete this user?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" v-on:click="deleteuser(selectedUser)" class="btn btn-danger">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -54,15 +82,14 @@
 <script>
   new Vue({
     el: 'body',
-
     data: {
-
       users: [],
       newuser: {},
       error: false,
       update: false,
       updateIndex: null,
       ids: [],
+      selectedUser: null,
       deleteMultiple: false
 
     },
@@ -71,17 +98,10 @@
     created: function() {
       // Use the vue-resource $http client to fetch data from the /users route
       this.$http.get('http://localhost:8081/api/users').then(function(response) {
-        console.log("response:",response)
-       // this.users = response.data ? response.data : []
-        for (var i = 0; i < response.data.length; i++) {
-          console.log("response.data[i].email:",response.data[i].email)
-          this.newuser = response.data
-          this.users.push(this.newuser)
-          this.newuser = {}
-          //this.users.push(response.data[i]);
+        if(response.data) {
+          console.log(response.data)
+          this.users = response.data ? response.data : []
         }
-        console.log("users:",this.users)
-
       })
 
     },
@@ -95,7 +115,9 @@
 
         // Post the new user to the /users route using the $http client
         this.$http.post('http://localhost:8081/api/users', this.newuser).success(function(response) {
-          this.newuser.id = response.created
+          console.log(response)
+
+          this.newuser = response
           this.users.push(this.newuser)
           console.log("user created!")
           console.log(this.newuser)
@@ -110,10 +132,22 @@
         this.$http.delete('http://localhost:8081/api/users?id=' + this.users[index].id).success(function(response) {
           this.users.splice(index, 1)
           console.log("user deleted!")
+          $('#exampleModal').modal('hide')
         }).error(function(error) {
           console.log(error)
         })
-      }
+      },
+      updateuser: function(index) {
+        // Use the $http client to delete a user by its id
+        this.$http.put('http://localhost:8081/api/users?id=' + this.users[index].id).success(function(response) {
+          this.users.splice(index, 1)
+          console.log("user updated!")
+        }).error(function(error) {
+          console.log(error)
+        })
+      },
+
+
     }
   })
 </script>
